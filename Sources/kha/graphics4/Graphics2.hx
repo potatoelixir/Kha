@@ -1024,13 +1024,17 @@ class Graphics2 extends kha.graphics2.Graphics {
 	}
 
 	override public function begin(clear: Bool = true, clearColor: Color = null): Void {
-		if (current == null) {
-			current = this;
-		}
-		else {
+		#if debug
+		if (current != this) {
 			throw "End before you begin";
 		}
-
+		#end
+		
+		if (current != null) {
+			current.flush();
+			current.g.end();
+		}
+		current = this;
 		g.begin();
 		if (clear) this.clear(clearColor);
 		setProjection();
@@ -1048,15 +1052,15 @@ class Graphics2 extends kha.graphics2.Graphics {
 	}
 
 	public override function end(): Void {
-		flush();
-		g.end();
-
-		if (current == this) {
-			current = null;
-		}
-		else {
+		#if debug
+		if (current != this) {
 			throw "Begin before you end";
 		}
+		#end
+		
+		current.flush();
+		current.g.end();
+		current = null;
 	}
 
 	private function drawVideoInternal(video: kha.Video, x: Float, y: Float, width: Float, height: Float): Void {
